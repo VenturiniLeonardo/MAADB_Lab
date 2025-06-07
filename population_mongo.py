@@ -15,7 +15,7 @@ csv_files = {
     "TagHasTypeTagClass": "test/static/tag_hasType_tagclass_0_0.csv",
     "TagClassIsSubclassOfTagClass": "test/static/tagclass_isSubclassOf_tagclass_0_0.csv",
     "IsLocatedInPlace": "test/dynamic/person_isLocatedIn_place_0_0.csv",
-    "Comment": "test/dinamic/comment_0_0.csv",
+    "Comment": "test/dynamic/comment_0_0.csv",
     "CommentReplyOfComment": "test/dynamic/comment_replyOf_comment_0_0.csv",
     "Post": "test/dynamic/post_0_0.csv",
     "ForumContainerPost ": "test/dynamic/forum_containerOf_post_0_0.csv"

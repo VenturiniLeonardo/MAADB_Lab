@@ -1,0 +1,295 @@
+<html>
+
+<head>
+  <title>Express</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <h1>Laboratorio MAADB 2025</h1>
+  <h2>Query Lookup</h2>
+  <p>Query 1: Persone di una determinata città,stato o continente (Cross)</p>
+  <form id="queryLookUpForm1">
+    <label for="location">Inserisci città, stato o continente:</label><br>
+    <input type="text" id="location" name="location" placeholder="Es. country, city, continent" required><br><br>
+    <select name="typeLocation" id="typeLocation">
+      <option value="country">Country</option>
+      <option value="city">City</option>
+      <option value="continent">Continent</option>
+    </select>
+    <button type="submit">Esegui Query</button>
+  </form>
+  <table id="table1" border="1"></table>
+  <br><br>
+  <p>Query 2: Dato un tag, determinare le persone che hanno messo mi piace ad un commento che ha quel tag</p>
+  <form id="queryLookUpForm2">
+    <label for="tagName">Inserisci nome del tag:</label><br>
+    <input type="text" id="tagName" name="tagName" placeholder="Es. Che_Guevara, Albert_Camus, Mahmud_of_Ghazni" required><br><br>
+    <button type="submit">Esegui Query</button>
+  </form>
+  <table id="table2" border="1"></table>
+  <br><br>
+  <p>Query 3:  Data la lingua di un post, determinare quali forum hanno post con quella lingua (Cross)</p>
+  <form id="queryLookUpForm3">
+    <label for="lang">Inserisci nome del tag:</label><br>
+    <input type="text" id="lang" name="lang" placeholder="Es. uz,tk,ar" required><br><br>
+    <button type="submit">Esegui Query</button>
+  </form>
+  <table id="table3" border="1"></table>
+
+  <br><br><br><br>
+  <h2>Query Analitiche</h2>
+  <p>Query 1: Numero di like a post creati da persone della stessa università, divisi per università (Cross) </p>
+  <table id="table4" border="1"></table>
+  <br><br>
+  <p>Query 2: Mostrare età di un moderatore e l'età media delle persone che conosce quel moderatore  </p>
+  <table id="table5" border="1"></table>
+  <br><br>
+  <p>Query 3: Per ogni tag individuare il gender che ha più interesse  </p>
+  <table id="table6" border="1"></table>
+</body>
+
+<script>
+  function insertFirst10People(jsonData,tableId) {
+    const table = document.getElementById(tableId);
+
+    if (!jsonData || !Array.isArray(jsonData.people)) {
+      console.error("Invalid JSON format: expected 'people' array.");
+      return;
+    }
+
+    const people = jsonData.people.slice(0, 10);
+
+    // Clear existing table content
+    table.innerHTML = "";
+
+    // Create table header
+    const headers = ["id", "firstName", "lastName"];
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+
+    // Create table body
+    const tbody = table.createTBody();
+    people.forEach(person => {
+      const row = tbody.insertRow();
+      headers.forEach(key => {
+        const cell = row.insertCell();
+        cell.textContent = person[key];
+      });
+    });
+  }
+
+  function insertFirst10Forum(jsonData) {
+    const table = document.getElementById("table3");
+
+    if (!jsonData || !Array.isArray(jsonData.forums)) {
+      console.error("Invalid JSON format: expected 'forums' array.");
+      return;
+    }
+
+    const forums = jsonData.forums.slice(0, 10);
+
+    // Clear existing content
+    table.innerHTML = "";
+
+    // Create table header
+    const headers = ["id", "title"];
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+
+    // Create table body
+    const tbody = table.createTBody();
+    forums.forEach(forum => {
+      const row = tbody.insertRow();
+      headers.forEach(key => {
+        const cell = row.insertCell();
+        cell.textContent = forum[key];
+      });
+    });
+  }
+
+  async function queryLookUp1(location,type) {
+    var param = "?type="+type+"&name="+location
+    const res = await fetch('/api/queryLookUp1'+param);
+    const people = await res.json();
+    insertFirst10People(people,"table1");
+  }
+
+  async function queryLookUp2(tagName) {
+    const res = await fetch('/api/queryLookUp2?tagName='+tagName);
+    const people = await res.json();
+    insertFirst10People(people,"table2");
+  }
+
+  async function queryLookUp3(lang) {
+    const res = await fetch('/api/queryLookUp3?language='+lang);
+    const forum = await res.json();
+    insertFirst10Forum(forum,"table3");
+  }
+
+
+  // Gestore del form lookup
+  document.getElementById('queryLookUpForm1').addEventListener('submit', function(event) {
+    event.preventDefault();  // Evita che il form si invii in modo tradizionale
+    const location = document.getElementById('location').value;  // Ottiene il valore dell'input
+    const type =  document.getElementById('typeLocation').value;
+    queryLookUp1(location,type);  // Esegue la funzione queryLookUp1 con il valore dell'input
+  });
+  document.getElementById('queryLookUpForm2').addEventListener('submit', function(event) {
+    event.preventDefault();  // Evita che il form si invii in modo tradizionale
+    const tagName = document.getElementById('tagName').value;  // Ottiene il valore dell'input
+    queryLookUp2(tagName);  // Esegue la funzione queryLookUp1 con il valore dell'input
+  });
+
+  document.getElementById('queryLookUpForm3').addEventListener('submit', function(event) {
+    event.preventDefault();  // Evita che il form si invii in modo tradizionale
+    const lang = document.getElementById('lang').value;  // Ottiene il valore dell'input
+    queryLookUp3(lang);  // Esegue la funzione queryLookUp1 con il valore dell'input
+  });
+
+  //ANALITICHE
+
+
+  function insertModsAverageAge(jsonData, tableId) {
+    const table = document.getElementById(tableId);
+
+    if (!jsonData || !Array.isArray(jsonData.mods)) {
+      console.error("Invalid JSON format: expected 'mods' array.");
+      return;
+    }
+
+    const mods = jsonData.mods.slice(0, 10);
+
+    // Clear table content
+    table.innerHTML = "";
+
+    // Table headers
+    const headers = ["id", "name", "averageAgeOfKnownPeople", "numberOfKnownPeople"];
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+
+    // Table body
+    const tbody = table.createTBody();
+    mods.forEach(mod => {
+      const row = tbody.insertRow();
+      headers.forEach(key => {
+        const cell = row.insertCell();
+        cell.textContent = mod[key];
+      });
+    });
+  }
+
+  function insertUniversityLikes(jsonData, tableId) {
+    const table = document.getElementById(tableId);
+
+    if (!jsonData || !Array.isArray(jsonData.count_like_with_names)) {
+      console.error("Invalid JSON format: expected 'count_like_with_names' array.");
+      return;
+    }
+
+    const universities = jsonData.count_like_with_names.slice(0, 10); // First 10 entries
+
+    // Clear existing table content
+    table.innerHTML = "";
+
+    // Create table header
+    const headers = ["universityId", "universityName", "likes"];
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+
+    // Create table body
+    const tbody = table.createTBody();
+    universities.forEach(university => {
+      const row = tbody.insertRow();
+      headers.forEach(key => {
+        const cell = row.insertCell();
+        cell.textContent = university[key];
+      });
+    });
+  }
+
+  function insertTagsGenderStats(jsonData, tableId) {
+    const table = document.getElementById(tableId);
+
+    if (!jsonData || !Array.isArray(jsonData.tags)) {
+      console.error("Invalid JSON format: expected 'tags' array.");
+      return;
+    }
+
+    const tags = jsonData.tags.slice(0, 10); // First 10 tags
+
+    // Clear table
+    table.innerHTML = "";
+
+    // Headers
+    const headers = ["tagName", "mostCommonGender", "count", "dominanceRatio"];
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+
+    // Body
+    const tbody = table.createTBody();
+    tags.forEach(tag => {
+      const row = tbody.insertRow();
+      headers.forEach(key => {
+        const cell = row.insertCell();
+        if (key === "dominanceRatio") {
+          cell.textContent = Number(tag[key]).toFixed(2);
+        } else {
+          cell.textContent = tag[key];
+        }
+      });
+    });
+  }
+
+
+  async function queryAnalitica1() {
+    const res = await fetch('/api/queryAnalitica1');
+    const likes = await res.json();
+    insertUniversityLikes(likes,"table4")
+
+  }
+
+  async function queryAnalitica2() {
+    const res = await fetch('/api/queryAnalitica2');
+    const age = await res.json();
+    insertModsAverageAge(age,"table5")
+  }
+
+  async function queryAnalitica3() {
+    const res = await fetch('/api/queryAnalitica3');
+    const tags = await res.json();
+    insertTagsGenderStats(tags,"table6")
+  }
+
+  queryAnalitica1();
+  queryAnalitica2();
+  queryAnalitica3();
+
+</script>
+
+</html>

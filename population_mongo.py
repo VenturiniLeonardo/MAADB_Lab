@@ -18,23 +18,45 @@ csv_files = {
     "Comment": "test/dynamic/comment_0_0.csv",
     "CommentReplyOfComment": "test/dynamic/comment_replyOf_comment_0_0.csv",
     "Post": "test/dynamic/post_0_0.csv",
-    "ForumContainerPost ": "test/dynamic/forum_containerOf_post_0_0.csv"
+    "ForumContainerPost": "test/dynamic/forum_containerOf_post_0_0.csv"
 }
 
 # Connessione a MongoDB
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 curr_dir = os.getcwd()
+
 # Caricamento dei file CSV
 for collection_name, filename in csv_files.items():
    
-    # Costruisci il percorso completo del file
     path = os.path.join(curr_dir, filename)
     
 
     try:
         # Leggi il CSV (modifica sep se serve)
         df = pd.read_csv(path, sep="|")
+
+        # Rinomina le colonne
+
+        has_id_1 = any(col.endswith('.id.1') for col in df.columns)
+        
+        new_columns = []
+        for col in df.columns:
+            if col.endswith('.id.1'):
+                col = col.lower()
+                new_col = col.replace('.id.1', 'From')
+                new_columns.append(new_col)
+            elif col.endswith('.id'):
+                col = col.lower()
+                if has_id_1:
+                    new_col = col.replace('.id', 'To')
+                else:
+                    new_col = col.replace('.id', 'Id')
+                new_columns.append(new_col)
+            else:
+                new_columns.append(col)
+        
+        df.columns = new_columns
 
         # Converti in dizionari
         data = df.to_dict(orient="records")
